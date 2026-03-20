@@ -22,7 +22,7 @@ export default function LeaderSetup() {
     setTimeout(() => {
       const team = createTeam(form.projectName, form.description, form.deadline, form.leaderName)
       if (team?.code) {
-        saveTeam(team.code, form.projectName, 'leader')
+        saveTeam(team.code, form.projectName, 'leader', isUniversal ? 'universal' : 'code')
         if (isUniversal) {
           saveUniversalTeam({
             code: team.code,

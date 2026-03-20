@@ -25,7 +25,13 @@ export default function MemberJoin() {
     setLoading(true)
     setTimeout(() => {
       joinTeam(code, form.name)
-      saveTeam(code, 'Team Project', 'member')
+      // Get actual project name from persisted team data
+      let projectName = 'Team Project'
+      try {
+        const teamData = JSON.parse(localStorage.getItem('flowmind_team_data') || '{}')
+        if (teamData[code]?.projectName) projectName = teamData[code].projectName
+      } catch {}
+      saveTeam(code, projectName, 'member', 'code')
       setLoading(false)
     }, 800)
   }

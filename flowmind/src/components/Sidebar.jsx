@@ -7,17 +7,21 @@ import styles from './Sidebar.module.css'
 const LEADER_ITEMS = [
   { id: 'overview', icon: '⬡', label: 'Overview' },
   { id: 'tasks', icon: '📌', label: 'Tasks' },
+  { id: 'meetings', icon: '🎙️', label: 'Meetings' },
   { id: 'decisions', icon: '⚖️', label: 'Decisions' },
   { id: 'insights', icon: '🔮', label: 'AI Insights' },
   { id: 'chat', icon: '💬', label: 'AI Chat' },
   { id: 'members', icon: '👥', label: 'Team Members' },
+  { id: 'groupchat', icon: '🗨️', label: 'Group Chat' },
 ]
 
 const MEMBER_ITEMS = [
   { id: 'mytasks', icon: '📋', label: 'My Tasks' },
+  { id: 'meetings', icon: '🎙️', label: 'Meetings' },
   { id: 'chat', icon: '💬', label: 'AI Assistant' },
   { id: 'feed', icon: '📡', label: 'Team Feed' },
   { id: 'members', icon: '👥', label: 'Team Members' },
+  { id: 'groupchat', icon: '🗨️', label: 'Group Chat' },
 ]
 
 export default function Sidebar({ activeTab, setActiveTab }) {

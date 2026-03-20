@@ -38,7 +38,10 @@ export default function TeamSwitcher({ onClose }) {
               <div key={i} className={styles.teamItem} onClick={() => handleSelect(t)}>
                 <div className={styles.teamIcon} style={{ background: 'var(--accent-glow)' }}>👑</div>
                 <div className={styles.teamInfo}>
-                  <div className={styles.teamName}>{t.projectName}</div>
+                  <div className={styles.teamName}>
+                    {t.projectName}
+                    {t.source === 'universal' && <span className={styles.universalBadge}>🌍 Universal</span>}
+                  </div>
                   <div className={styles.teamMeta}>Code: {t.code} · Leader</div>
                 </div>
                 <svg className={styles.teamArrow} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -57,9 +60,14 @@ export default function TeamSwitcher({ onClose }) {
           ) : (
             joinedTeams.map((t, i) => (
               <div key={i} className={styles.teamItem} onClick={() => handleSelect(t)}>
-                <div className={styles.teamIcon} style={{ background: 'var(--green-dim)' }}>⚡</div>
+                <div className={styles.teamIcon} style={{ background: t.source === 'universal' ? 'rgba(124,106,255,0.1)' : 'var(--green-dim)' }}>
+                  {t.source === 'universal' ? '🌍' : '⚡'}
+                </div>
                 <div className={styles.teamInfo}>
-                  <div className={styles.teamName}>{t.projectName}</div>
+                  <div className={styles.teamName}>
+                    {t.projectName}
+                    {t.source === 'universal' && <span className={styles.universalBadge}>🌍 Universal</span>}
+                  </div>
                   <div className={styles.teamMeta}>Code: {t.code} · Member</div>
                 </div>
                 <svg className={styles.teamArrow} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

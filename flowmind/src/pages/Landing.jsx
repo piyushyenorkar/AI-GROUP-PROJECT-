@@ -88,6 +88,25 @@ export default function Landing() {
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
+
+          <button
+            className={`${styles.actionCard} ${hovered === 'find' ? styles.activeCard : ''}`}
+            onMouseEnter={() => setHovered('find')}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => {
+              if (!isAuthenticated) { navigate('auth'); return }
+              navigate('find-teams')
+            }}
+          >
+            <div className={styles.actionIcon}>🔍</div>
+            <div className={styles.actionContent}>
+              <div className={styles.actionTitle}>Find a Team</div>
+              <div className={styles.actionDesc}>Browse universal teams</div>
+            </div>
+            <svg className={styles.actionArrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
         </div>
       </main>
 

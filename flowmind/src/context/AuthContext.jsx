@@ -87,13 +87,13 @@ export function AuthProvider({ children }) {
     return (users[session.email].teams || []).some(t => t.code === teamCode)
   }, [])
 
-  const saveTeam = useCallback((teamCode, projectName, role) => {
+  const saveTeam = useCallback((teamCode, projectName, role, source = 'code') => {
     const users = getUsers()
     const session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
     if (!session?.email || !users[session.email]) return { error: 'Not logged in' }
     const rec = users[session.email]
     if (rec.teams.some(t => t.code === teamCode)) return { error: 'Already in this team.' }
-    rec.teams.push({ code: teamCode, projectName, role, joinedAt: new Date().toISOString() })
+    rec.teams.push({ code: teamCode, projectName, role, source, joinedAt: new Date().toISOString() })
     users[session.email] = rec
     saveUsers(users)
     return { success: true }
@@ -127,7 +127,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   // ── Applications ──────────────────────────────────────────────────────
-  const applyToTeam = useCallback((teamCode, teamName) => {
+  const applyToTeam = useCallback((teamCode, teamName, role) => {
     const session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
     if (!session?.email) return { error: 'Not logged in' }
 
@@ -145,6 +145,7 @@ export function AuthProvider({ children }) {
       teamName,
       applicantEmail: session.email,
       applicantName: session.name,
+      appliedRole: role || 'Member',
       status: 'pending',
       chat: [],
       createdAt: new Date().toISOString(),
@@ -190,6 +191,7 @@ export function AuthProvider({ children }) {
             code: app.teamCode,
             projectName: app.teamName,
             role: 'member',
+            source: 'universal',
             joinedAt: new Date().toISOString(),
           })
           users[app.applicantEmail] = applicantRec

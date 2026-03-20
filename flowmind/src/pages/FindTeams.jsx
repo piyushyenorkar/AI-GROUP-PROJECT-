@@ -23,6 +23,8 @@ export default function FindTeams() {
   const [chatOpen, setChatOpen] = useState(null) // appId
   const [chatText, setChatText] = useState('')
   const [, forceUpdate] = useState(0)
+  const [applyTarget, setApplyTarget] = useState(null) // team object for apply form
+  const [applyRole, setApplyRole] = useState('')
 
   const refresh = () => forceUpdate(n => n + 1)
 
@@ -45,11 +47,20 @@ export default function FindTeams() {
     )
   })
 
-  const handleApply = (team) => {
-    const result = applyToTeam(team.code, team.name)
+  const openApplyForm = (team) => {
+    const roles = team.rolesNeeded?.split(',').map(r => r.trim()).filter(Boolean) || []
+    setApplyTarget(team)
+    setApplyRole(roles[0] || 'Member')
+  }
+
+  const submitApplication = () => {
+    if (!applyTarget) return
+    const result = applyToTeam(applyTarget.code, applyTarget.name, applyRole)
     if (result.error) {
       alert(result.error)
     } else {
+      setApplyTarget(null)
+      setApplyRole('')
       setActiveTab('applied')
       refresh()
     }
@@ -75,7 +86,7 @@ export default function FindTeams() {
 
   const joinAcceptedTeam = (app) => {
     joinTeam(app.teamCode, user.name)
-    saveTeam(app.teamCode, app.teamName, 'member')
+    saveTeam(app.teamCode, app.teamName, 'member', 'universal')
   }
 
   return (
@@ -167,7 +178,7 @@ export default function FindTeams() {
                         ) : alreadyApplied ? (
                           <span style={{ fontSize: '13px', color: 'var(--yellow)' }}>⏳ Applied</span>
                         ) : (
-                          <button className="btn-primary" onClick={() => handleApply(team)} style={{ fontSize: '13px', padding: '7px 18px' }}>
+                          <button className="btn-primary" onClick={() => openApplyForm(team)} style={{ fontSize: '13px', padding: '7px 18px' }}>
                             ✋ Apply to Join
                           </button>
                         )}
@@ -234,6 +245,7 @@ export default function FindTeams() {
                       <div>
                         <div className={styles.appTeam}>{freshApp.teamName}</div>
                         <div className={styles.appDate}>Applied {new Date(freshApp.createdAt).toLocaleDateString()}</div>
+                      {freshApp.appliedRole && <div style={{ fontSize: '12px', color: 'var(--accent2)', marginTop: '2px' }}>Role: {freshApp.appliedRole}</div>}
                       </div>
                       <span className={`tag ${freshApp.status === 'accepted' ? 'tag-green' : freshApp.status === 'rejected' ? 'tag-red' : 'tag-yellow'}`}>
                         {freshApp.status === 'accepted' ? '✅ Accepted' : freshApp.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
@@ -290,6 +302,7 @@ export default function FindTeams() {
                         <div className={styles.appDate}>
                           Applied to <strong>{freshApp.teamName}</strong> · {new Date(freshApp.createdAt).toLocaleDateString()}
                         </div>
+                        {freshApp.appliedRole && <div style={{ fontSize: '12px', color: 'var(--accent2)', marginTop: '2px' }}>Applying as: <strong>{freshApp.appliedRole}</strong></div>}
                       </div>
                       <span className={`tag ${freshApp.status === 'accepted' ? 'tag-green' : freshApp.status === 'rejected' ? 'tag-red' : 'tag-yellow'}`}>
                         {freshApp.status === 'accepted' ? '✅ Accepted' : freshApp.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
@@ -323,6 +336,52 @@ export default function FindTeams() {
           </>
         )}
       </div>
+
+      {/* Apply Form Modal */}
+      {applyTarget && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.15s ease' }} onClick={() => setApplyTarget(null)}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', width: '100%', maxWidth: '420px', padding: '28px', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setApplyTarget(null)} style={{ position: 'absolute', top: '14px', right: '14px', background: 'none', border: 'none', color: 'var(--text3)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+
+            <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text)', marginBottom: '4px' }}>Apply to {applyTarget.name}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '20px' }}>by {applyTarget.leaderName} · 📍 {applyTarget.city}, {applyTarget.state}</div>
+
+            {applyTarget.purpose && (
+              <div style={{ fontSize: '13px', color: 'var(--text2)', background: 'var(--surface)', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', lineHeight: '1.5' }}>{applyTarget.purpose}</div>
+            )}
+
+            <label className="label" style={{ marginBottom: '6px' }}>Select the role you're applying for</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+              {(applyTarget.rolesNeeded?.split(',').map(r => r.trim()).filter(Boolean) || ['Member']).map((role, i) => (
+                <button
+                  key={i}
+                  onClick={() => setApplyRole(role)}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '10px',
+                    border: applyRole === role ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    background: applyRole === role ? 'var(--accent-glow)' : 'var(--surface)',
+                    color: applyRole === role ? 'var(--accent2)' : 'var(--text2)',
+                    fontSize: '13px',
+                    fontWeight: applyRole === role ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn-primary" onClick={submitApplication} disabled={!applyRole} style={{ flex: 1, justifyContent: 'center' }}>
+                ✋ Submit Application as {applyRole}
+              </button>
+              <button className="btn-ghost" onClick={() => setApplyTarget(null)} style={{ flexShrink: 0 }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -39,6 +39,40 @@ function persistTeamData(teamCode, data) {
   } catch {}
 }
 
+// ── Persistent meetings storage (per team code) ─────────────────────────
+const MEETINGS_KEY = 'flowmind_meetings'
+const PROFILES_KEY = 'flowmind_member_profiles'
+
+function getPersistedMeetings(teamCode) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MEETINGS_KEY) || '{}')
+    return all[teamCode] || []
+  } catch { return [] }
+}
+
+function persistMeetings(teamCode, meetings) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MEETINGS_KEY) || '{}')
+    all[teamCode] = meetings
+    localStorage.setItem(MEETINGS_KEY, JSON.stringify(all))
+  } catch {}
+}
+
+function getPersistedProfiles(teamCode) {
+  try {
+    const all = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}')
+    return all[teamCode] || {}
+  } catch { return {} }
+}
+
+function persistProfiles(teamCode, profiles) {
+  try {
+    const all = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}')
+    all[teamCode] = profiles
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(all))
+  } catch {}
+}
+
 const INITIAL_STATE = {
   role: null,
   page: 'landing',
@@ -48,6 +82,8 @@ const INITIAL_STATE = {
   decisions: [],
   memoryFeed: [],
   members: [],
+  meetings: [],
+  memberProfiles: {},
 }
 
 export function AppProvider({ children }) {
@@ -78,6 +114,7 @@ export function AppProvider({ children }) {
       projectName,
       description,
       deadline,
+      leaderName,
       createdAt: new Date().toISOString(),
     }
     const leader = { id: 'leader', name: leaderName, role: 'Leader', isLeader: true }
@@ -95,6 +132,8 @@ export function AppProvider({ children }) {
       members: [leader],
       tasks: [],
       decisions: [],
+      meetings: [],
+      memberProfiles: {},
       memoryFeed: [{
         id: Date.now(),
         type: 'project_created',
@@ -119,10 +158,30 @@ export function AppProvider({ children }) {
 
     // Load persisted team data and members
     const persistedTeam = getPersistedTeamData(code)
-    const persistedMembers = getPersistedMembers(code)
+    let persistedMembersList = getPersistedMembers(code)
+
+    // If no persisted members but we have team data with a leaderName, reconstruct leader
+    if (persistedMembersList.length === 0 && persistedTeam?.leaderName) {
+      const leader = { id: 'leader', name: persistedTeam.leaderName, role: 'Leader', isLeader: true }
+      persistedMembersList = [leader]
+      persistMembers(code, persistedMembersList)
+    }
+
+    // Also check universal teams for leader info if still no leader found
+    if (!persistedMembersList.some(m => m.isLeader)) {
+      try {
+        const universalTeams = JSON.parse(localStorage.getItem('flowmind_universal_teams') || '{}')
+        const uTeam = universalTeams[code]
+        if (uTeam?.leaderName) {
+          const leader = { id: 'leader', name: uTeam.leaderName, role: 'Leader', isLeader: true }
+          persistedMembersList = [leader, ...persistedMembersList]
+          persistMembers(code, persistedMembersList)
+        }
+      } catch {}
+    }
 
     // Check if this person is already in the persisted members
-    const alreadyIn = persistedMembers.some(m => m.name === name)
+    const alreadyIn = persistedMembersList.some(m => m.name === name)
 
     const teamData = persistedTeam || {
       id: 1,
@@ -135,8 +194,8 @@ export function AppProvider({ children }) {
 
     // Build members list: persisted members + new member (if not already in)
     const allMembers = alreadyIn
-      ? persistedMembers
-      : [...persistedMembers, member]
+      ? persistedMembersList
+      : [...persistedMembersList, member]
 
     // Persist updated members
     if (!alreadyIn) {
@@ -150,6 +209,8 @@ export function AppProvider({ children }) {
       team: teamData,
       currentUser: member,
       members: allMembers,
+      meetings: getPersistedMeetings(code),
+      memberProfiles: getPersistedProfiles(code),
       memoryFeed: [
         {
           id: Date.now(),
@@ -171,18 +232,27 @@ export function AppProvider({ children }) {
   // ── LEADER: Load existing team (team switcher) ─────────────────────
   const loadTeamAsLeader = useCallback((code, projectName, leaderName) => {
     const persistedTeam = getPersistedTeamData(code)
-    const persistedMembers = getPersistedMembers(code)
+    let membersList = getPersistedMembers(code)
 
     const teamData = persistedTeam || {
       id: 1,
       code,
       projectName,
+      leaderName,
       description: '',
       deadline: '',
       createdAt: new Date().toISOString(),
     }
 
-    const leader = persistedMembers.find(m => m.isLeader) || { id: 'leader', name: leaderName, role: 'Leader', isLeader: true }
+    // Ensure leader is always in the members list
+    const leader = membersList.find(m => m.isLeader) || { id: 'leader', name: leaderName, role: 'Leader', isLeader: true }
+    if (!membersList.some(m => m.isLeader)) {
+      membersList = [leader, ...membersList]
+    }
+
+    // Always persist so members joining later can see the leader
+    persistTeamData(code, teamData)
+    persistMembers(code, membersList)
 
     setState(prev => ({
       ...prev,
@@ -190,9 +260,11 @@ export function AppProvider({ children }) {
       page: 'leader-dashboard',
       team: teamData,
       currentUser: leader,
-      members: persistedMembers.length > 0 ? persistedMembers : [leader],
+      members: membersList,
       tasks: [],
       decisions: [],
+      meetings: getPersistedMeetings(code),
+      memberProfiles: getPersistedProfiles(code),
       memoryFeed: [],
     }))
   }, [])
@@ -329,6 +401,48 @@ export function AppProvider({ children }) {
     setState(prev => ({ ...prev, page }))
   }, [])
 
+  const addMeeting = useCallback((meetingData) => {
+    setState(prev => {
+      const newMeetings = [meetingData, ...prev.meetings]
+      // Persist meetings per team
+      if (prev.team?.code) {
+        persistMeetings(prev.team.code, newMeetings)
+      }
+      return {
+        ...prev,
+        meetings: newMeetings,
+        memoryFeed: [{
+          id: Date.now(),
+          type: 'meeting_completed',
+          timestamp: new Date().toISOString(),
+          text: `Meeting "${meetingData.title}" ended — ${meetingData.tasksCreated?.length || 0} tasks auto-assigned`,
+          icon: '🎙️',
+        }, ...prev.memoryFeed],
+      }
+    })
+  }, [])
+
+  const updateMemberProfile = useCallback((memberName, profileData) => {
+    setState(prev => {
+      const newProfiles = { ...prev.memberProfiles, [memberName]: profileData }
+      // Persist profiles per team
+      if (prev.team?.code) {
+        persistProfiles(prev.team.code, newProfiles)
+      }
+      return {
+        ...prev,
+        memberProfiles: newProfiles,
+        memoryFeed: [{
+          id: Date.now(),
+          type: 'profile_updated',
+          timestamp: new Date().toISOString(),
+          text: `${memberName} updated their skill profile`,
+          icon: '👤',
+        }, ...prev.memoryFeed],
+      }
+    })
+  }, [])
+
   const reset = useCallback(() => setState(INITIAL_STATE), [])
 
   return (
@@ -343,6 +457,8 @@ export function AppProvider({ children }) {
       updateTaskStatus,
       addTaskUpdate,
       addDecision,
+      addMeeting,
+      updateMemberProfile,
       navigate,
       reset,
     }}>
