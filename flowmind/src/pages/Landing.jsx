@@ -1,14 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 import TeamSwitcher from '../components/TeamSwitcher'
 import styles from './Landing.module.css'
 
 export default function Landing() {
-  const { navigate } = useApp()
-  const { user, isAuthenticated } = useAuth()
+  const { navigate, reset } = useApp()
+  const { user, isAuthenticated, signout } = useAuth()
   const [hovered, setHovered] = useState(null)
   const [showSwitcher, setShowSwitcher] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef(null)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   return (
     <div className={styles.page}>
@@ -24,9 +33,23 @@ export default function Landing() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className={styles.navTag}>AI Group Project Manager</span>
           {isAuthenticated ? (
-            <button className="btn-ghost" onClick={() => navigate('auth')} style={{ fontSize: '13px' }}>
-              👤 {user.name}
-            </button>
+            <div ref={menuRef} style={{ position: 'relative' }}>
+              <button className="btn-ghost" onClick={() => setShowMenu(!showMenu)} style={{ fontSize: '13px' }}>
+                👤 {user.name}
+              </button>
+              {showMenu && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px', minWidth: '160px', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+                  <button
+                    onClick={() => { signout(); reset(); setShowMenu(false) }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '9px 14px', background: 'none', border: 'none', color: 'var(--red)', fontSize: '13px', cursor: 'pointer', borderRadius: '8px', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,80,80,0.1)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  >
+                    🚪 Log Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <button className="btn-primary" onClick={() => navigate('auth')} style={{ padding: '7px 16px', fontSize: '13px' }}>
               Sign In

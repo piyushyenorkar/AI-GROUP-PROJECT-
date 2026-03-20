@@ -40,35 +40,10 @@ export default function AuthPage() {
     }
   }
 
-  // ── Signed in: Simple welcome + actions + logout ─────────────────────
+  // ── Signed in: redirect to landing ─────────────────────────────────────
   if (user) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.glow} />
-        <div className={styles.card}>
-          <div className={styles.logo}>
-            <span className={styles.logoMark}>FM</span>
-            <span className={styles.logoText}>FlowMind</span>
-          </div>
-
-          <div className={styles.title}>Welcome back, {user.name}!</div>
-          <div className={styles.sub}>Pick up where you left off or start something new.</div>
-
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
-            <button className="btn-primary" onClick={() => navigate('leader-setup')}>👑 Create Team</button>
-            <button className="btn-secondary" onClick={() => navigate('member-join')}>⚡ Join Team</button>
-          </div>
-
-          <button
-            className="btn-ghost"
-            onClick={() => { signout(); navigate('landing') }}
-            style={{ width: '100%', justifyContent: 'center', color: 'var(--text3)', fontSize: '13px' }}
-          >
-            🚪 Log Out
-          </button>
-        </div>
-      </div>
-    )
+    navigate('landing')
+    return null
   }
 
   // ── Not signed in: Sign in / Sign up form ─────────────────────────────

@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { useAuth } from '../context/AuthContext'
 import TeamSwitcher from './TeamSwitcher'
 import styles from './Sidebar.module.css'
 
@@ -25,15 +24,9 @@ const MEMBER_ITEMS = [
 ]
 
 export default function Sidebar({ activeTab, setActiveTab }) {
-  const { team, currentUser, role, reset } = useApp()
-  const { signout } = useAuth()
+  const { team, currentUser, role, navigate } = useApp()
   const [showSwitcher, setShowSwitcher] = useState(false)
   const items = role === 'leader' ? LEADER_ITEMS : MEMBER_ITEMS
-
-  const handleSignOut = () => {
-    signout()
-    reset()
-  }
 
   return (
     <>
@@ -75,9 +68,9 @@ export default function Sidebar({ activeTab, setActiveTab }) {
               <div className={styles.userRole}>{role === 'leader' ? '👑 Leader' : '🧑‍💻 Member'}</div>
             </div>
           </div>
-          <button className={styles.exitBtn} onClick={handleSignOut} title="Sign out & exit">
+          <button className={styles.exitBtn} onClick={() => navigate('landing')} title="Back to Home">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+              <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
         </div>
