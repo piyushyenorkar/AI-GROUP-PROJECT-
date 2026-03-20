@@ -16,7 +16,7 @@ function calcStrength(p) {
 }
 
 export default function MemberProfile() {
-  const { currentUser, memberProfiles, updateMemberProfile } = useApp()
+  const { currentUser, memberProfiles, updateMemberProfile, team } = useApp()
   const name = currentUser?.name || 'Member'
   const existing = memberProfiles?.[name] || {}
 
@@ -30,8 +30,10 @@ export default function MemberProfile() {
   const [skillInput, setSkillInput] = useState('')
   const [saved, setSaved] = useState(false)
 
+  // Re-sync form when persisted profile data loads (e.g. team switch, or on first load)
+  const existingKey = JSON.stringify(existing)
   useEffect(() => {
-    if (existing.title !== undefined) {
+    if (Object.keys(existing).length > 0) {
       setForm({
         title: existing.title || '',
         skills: existing.skills || [],
@@ -40,7 +42,7 @@ export default function MemberProfile() {
         preferredTypes: existing.preferredTypes || [],
       })
     }
-  }, [name])
+  }, [existingKey])
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
@@ -64,7 +66,7 @@ export default function MemberProfile() {
 
   const handleSave = () => {
     updateMemberProfile(name, form)
-    storeMemberProfile(name, form)
+    storeMemberProfile(name, form, team?.code)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }

@@ -39,10 +39,10 @@ export async function storeTask(taskData, meetingId) {
 /**
  * Store a member's skill profile
  */
-export async function storeMemberProfile(memberName, profile) {
+export async function storeMemberProfile(memberName, profile, teamCode) {
   try {
     await retainMemory(
-      'profiles',
+      teamCode || 'profiles',
       `Team member profile — ${memberName}: Title: ${profile.title || 'N/A'}. Skills: ${profile.skills?.join(', ') || 'N/A'}. Experience: ${profile.pastWork || 'N/A'}. Availability: ${profile.availability || 'N/A'}. Preferred tasks: ${profile.preferredTypes?.join(', ') || 'N/A'}.`,
       { type: 'member_profile', memberName }
     )
