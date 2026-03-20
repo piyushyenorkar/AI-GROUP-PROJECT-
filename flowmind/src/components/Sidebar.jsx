@@ -24,8 +24,21 @@ const MEMBER_ITEMS = [
 ]
 
 export default function Sidebar({ activeTab, setActiveTab }) {
-  const { team, currentUser, role, navigate } = useApp()
+  const { team, currentUser, role, navigate, updateTeamLinks } = useApp()
   const [showSwitcher, setShowSwitcher] = useState(false)
+  const [editingLinks, setEditingLinks] = useState(false)
+  const [linksForm, setLinksForm] = useState({ github: '', deploy: '' })
+
+  const handleEditLinks = () => {
+    setLinksForm({ github: team?.githubLink || '', deploy: team?.deployLink || '' })
+    setEditingLinks(true)
+  }
+
+  const handleSaveLinks = () => {
+    updateTeamLinks({ githubLink: linksForm.github, deployLink: linksForm.deploy })
+    setEditingLinks(false)
+  }
+
   const items = role === 'leader' ? LEADER_ITEMS : MEMBER_ITEMS
 
   return (
@@ -57,6 +70,61 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             </button>
           ))}
         </nav>
+
+        <div className={styles.linksSection}>
+          <div className={styles.linksHeader}>
+            <span>Project Links</span>
+            {role === 'leader' && (
+              <button
+                className={styles.editBtn}
+                onClick={editingLinks ? handleSaveLinks : handleEditLinks}
+              >
+                {editingLinks ? 'Save' : 'Edit'}
+              </button>
+            )}
+          </div>
+          {editingLinks ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <input
+                className="input"
+                style={{ fontSize: '12px', padding: '6px 8px' }}
+                placeholder="GitHub URL"
+                value={linksForm.github}
+                onChange={e => setLinksForm(prev => ({ ...prev, github: e.target.value }))}
+              />
+              <input
+                className="input"
+                style={{ fontSize: '12px', padding: '6px 8px' }}
+                placeholder="Deployed URL"
+                value={linksForm.deploy}
+                onChange={e => setLinksForm(prev => ({ ...prev, deploy: e.target.value }))}
+              />
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div className={styles.linkRow}>
+                <span>🐙</span>
+                {team?.githubLink ? (
+                  <a href={team.githubLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    View GitHub
+                  </a>
+                ) : (
+                  <span style={{ color: 'var(--text3)', fontSize: '12px' }}>No link added</span>
+                )}
+              </div>
+              <div className={styles.linkRow}>
+                <span>🌍</span>
+                {team?.deployLink ? (
+                  <a href={team.deployLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    View Deployment
+                  </a>
+                ) : (
+                  <span style={{ color: 'var(--text3)', fontSize: '12px' }}>No link added</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className={styles.bottom}>
           <div className={styles.user}>

@@ -443,6 +443,25 @@ export function AppProvider({ children }) {
     })
   }, [])
 
+  const updateTeamLinks = useCallback((links) => {
+    setState(prev => {
+      if (!prev.team) return prev
+      const updatedTeam = { ...prev.team, ...links }
+      persistTeamData(prev.team.code, updatedTeam)
+      return {
+        ...prev,
+        team: updatedTeam,
+        memoryFeed: [{
+          id: Date.now(),
+          type: 'links_updated',
+          timestamp: new Date().toISOString(),
+          text: 'Project links were updated',
+          icon: '🔗',
+        }, ...prev.memoryFeed].slice(0, 50),
+      }
+    })
+  }, [])
+
   const reset = useCallback(() => setState(INITIAL_STATE), [])
 
   return (
@@ -459,6 +478,7 @@ export function AppProvider({ children }) {
       addDecision,
       addMeeting,
       updateMemberProfile,
+      updateTeamLinks,
       navigate,
       reset,
     }}>
