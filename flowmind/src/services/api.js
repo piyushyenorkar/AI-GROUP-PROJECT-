@@ -85,7 +85,7 @@ export async function recallMemory(teamCode, query, options = {}) {
  * @param {string} systemPrompt - Optional system prompt
  * @returns {string} The assistant's reply text
  */
-export async function groqChat(messages, systemPrompt = '') {
+export async function groqChat(messages, systemPrompt = '', options = {}) {
   const allMessages = []
   if (systemPrompt) {
     allMessages.push({ role: 'system', content: systemPrompt })
@@ -102,8 +102,8 @@ export async function groqChat(messages, systemPrompt = '') {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: allMessages,
-        temperature: 0.7,
-        max_completion_tokens: 1500,
+        temperature: options.temperature ?? 0.7,
+        max_completion_tokens: options.maxTokens || 1500,
       }),
     })
 
@@ -125,51 +125,114 @@ export async function groqChat(messages, systemPrompt = '') {
  * Generate AI insights using recalled Hindsight memories + Groq
  */
 export async function generateInsights(teamCode, tasks, decisions, members) {
-  // Step 1: Recall all relevant memories
-  const recalled = await recallMemory(teamCode, 'team performance patterns risks bottlenecks task delays decisions')
-  const memoryContext = recalled
-    ? JSON.stringify(recalled).substring(0, 3000)
-    : 'No memories recalled from Hindsight.'
+  // Step 1: Recall multiple memory contexts for a richer picture
+  const memoryQueries = [
+    'team performance task completion patterns delays',
+    'decisions risks bottlenecks problems encountered',
+    'member skills profiles strengths weaknesses assignments',
+    'meetings discussions action items follow-ups',
+  ]
 
-  // Step 2: Build the prompt
-  const systemPrompt = `You are FlowMind AI, an intelligent project management assistant. You analyze team data and Hindsight memories to surface insights.
+  let memoryContext = ''
+  for (const query of memoryQueries) {
+    try {
+      const recalled = await recallMemory(teamCode, query, { maxTokens: 1500 })
+      if (recalled) {
+        const text = typeof recalled === 'string' ? recalled : JSON.stringify(recalled)
+        memoryContext += text.substring(0, 1500) + '\n---\n'
+      }
+    } catch {}
+  }
+  if (!memoryContext.trim()) {
+    memoryContext = 'No memories found in Hindsight for this team yet.'
+  }
 
-You have access to the following data:
-- ${tasks.length} tasks (${tasks.filter(t => t.status === 'done').length} done, ${tasks.filter(t => t.status === 'in-progress').length} in progress, ${tasks.filter(t => t.status === 'todo').length} todo)
-- ${decisions.length} decisions logged
-- ${members.length} team members
-- Hindsight Memory Context: ${memoryContext}
+  // Step 2: Build structured data for the prompt
+  const taskData = tasks.map(t => ({
+    title: t.title,
+    assignedTo: t.assignedTo,
+    status: t.status,
+    deadline: t.deadline || 'not set',
+    estimatedHours: t.estimatedHours || 0,
+    createdAt: t.createdAt,
+  }))
 
-Current tasks: ${JSON.stringify(tasks.map(t => ({ title: t.title, assignedTo: t.assignedTo, status: t.status, deadline: t.deadline })))}
-Current decisions: ${JSON.stringify(decisions.map(d => ({ decision: d.decision, reason: d.reason, impact: d.impact })))}
+  const decisionData = decisions.map(d => ({
+    decision: d.decision,
+    reason: d.reason,
+    impact: d.impact,
+    involvedPeople: d.involvedPeople,
+  }))
 
-Respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
+  const memberData = members.map(m => ({
+    name: m.name,
+    role: m.role,
+    isLeader: m.isLeader,
+  }))
+
+  // Step 3: Build the prompt
+  const systemPrompt = `You are FlowMind AI — a project intelligence engine. You analyze REAL team data stored in Hindsight memory to surface actionable insights.
+
+CRITICAL: Your analysis must be SPECIFIC to this team. Use actual task names, member names, deadlines, and memory context. Do NOT generate generic insights.
+
+TEAM DATA:
+• ${tasks.length} tasks: ${tasks.filter(t => t.status === 'done').length} done, ${tasks.filter(t => t.status === 'in-progress').length} in-progress, ${tasks.filter(t => t.status === 'todo').length} todo
+• ${decisions.length} decisions logged
+• ${members.length} team members: ${members.map(m => m.name).join(', ')}
+
+TASKS:
+${JSON.stringify(taskData, null, 1)}
+
+DECISIONS:
+${JSON.stringify(decisionData, null, 1)}
+
+MEMBERS:
+${JSON.stringify(memberData, null, 1)}
+
+HINDSIGHT MEMORY (past events, conversations, patterns):
+${memoryContext.substring(0, 4000)}
+
+RULES:
+1. Reference ACTUAL task names and member names from the data above
+2. Calculate risk scores based on deadline proximity, workload, and memory patterns
+3. Identify patterns from the Hindsight memory — recurring issues, communication gaps, workload imbalances
+4. For bottlenecks, identify tasks that are blocking others or have been in-progress too long
+5. Recommendation must be a specific, actionable paragraph referencing real data
+
+Respond with ONLY valid JSON, no markdown, no explanation:
 {
-  "risks": [{"member": "name", "task": "title", "risk": 72, "reason": "explanation"}],
-  "patterns": [{"icon": "emoji", "title": "Pattern Name", "detail": "explanation"}],
-  "bottlenecks": [{"task": "title", "person": "name", "waiting": 2}],
-  "recommendation": "Overall recommendation string"
+  "risks": [{"member": "real name", "task": "real task title", "risk": 0-100, "reason": "specific explanation from data"}],
+  "patterns": [{"icon": "emoji", "title": "Pattern Name", "detail": "specific detail from memory"}],
+  "bottlenecks": [{"task": "real task title", "person": "real name", "waiting": days_number}],
+  "recommendation": "Specific actionable recommendation paragraph"
 }
-Provide 2-3 items per category. Use real data from the tasks/decisions provided. Risk should be 0-100.`
+Provide 2-4 items per category.`
 
-  const reply = await groqChat(
-    [{ role: 'user', content: 'Analyze this team\'s performance and generate structured insights.' }],
-    systemPrompt
-  )
-
-  if (!reply) return null
-
-  // Step 3: Parse JSON response
   try {
-    // Try to extract JSON from the response
-    const jsonMatch = reply.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
+    const reply = await groqChat(
+      [{ role: 'user', content: 'Analyze this team\'s performance data and Hindsight memory. Generate specific, data-driven insights.' }],
+      systemPrompt,
+      { maxTokens: 3000 }
+    )
+
+    if (!reply) {
+      console.warn('[Insights] Groq returned null')
+      return null
     }
-    return JSON.parse(reply)
+
+    // Parse JSON response
+    const cleaned = reply.replace(/```json|```/g, '').trim()
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0])
+      // Validate required fields
+      if (parsed.risks && parsed.patterns) {
+        return parsed
+      }
+    }
+    return JSON.parse(cleaned)
   } catch (err) {
     console.warn('[Insights] Failed to parse Groq response:', err.message)
-    console.debug('[Insights] Raw response:', reply)
     return null
   }
 }
