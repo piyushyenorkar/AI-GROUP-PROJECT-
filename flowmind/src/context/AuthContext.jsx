@@ -93,27 +93,35 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  // Check if current user is already a member of a team
+  const isTeamMember = useCallback((teamCode) => {
+    const users = getUsers()
+    const session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
+    if (!session?.email || !users[session.email]) return false
+    return (users[session.email].teams || []).some(t => t.code === teamCode)
+  }, [])
+
   // Save a team association to the user's profile
   const saveTeam = useCallback((teamCode, projectName, role) => {
     const users = getUsers()
     const session = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-    if (!session?.email || !users[session.email]) return
+    if (!session?.email || !users[session.email]) return { error: 'Not logged in' }
 
     const userRecord = users[session.email]
-    // Avoid duplicates
+    // Check if already in this team
     const existing = userRecord.teams.findIndex(t => t.code === teamCode)
     if (existing >= 0) {
-      userRecord.teams[existing] = { ...userRecord.teams[existing], projectName, role }
-    } else {
-      userRecord.teams.push({
-        code: teamCode,
-        projectName,
-        role,
-        joinedAt: new Date().toISOString(),
-      })
+      return { error: 'You are already a member of this team.' }
     }
+    userRecord.teams.push({
+      code: teamCode,
+      projectName,
+      role,
+      joinedAt: new Date().toISOString(),
+    })
     users[session.email] = userRecord
     saveUsers(users)
+    return { success: true }
   }, [])
 
   // Get all teams for current user
@@ -133,6 +141,7 @@ export function AuthProvider({ children }) {
       signout,
       saveTeam,
       getMyTeams,
+      isTeamMember,
       isAuthenticated: !!user,
     }}>
       {children}

@@ -6,6 +6,7 @@ import TasksTab from '../components/TasksTab'
 import DecisionsTab from '../components/DecisionsTab'
 import InsightsTab from '../components/InsightsTab'
 import ChatTab from '../components/ChatTab'
+import TeamMembers from '../components/TeamMembers'
 import styles from './Dashboard.module.css'
 
 const TAB_TITLES = {
@@ -14,6 +15,7 @@ const TAB_TITLES = {
   decisions: 'Decision Log',
   insights: 'AI Insights',
   chat: 'AI Chat',
+  members: 'Team Members',
 }
 
 export default function LeaderDashboard() {
@@ -33,6 +35,7 @@ export default function LeaderDashboard() {
           {activeTab === 'decisions' && <DecisionsTab />}
           {activeTab === 'insights' && <InsightsTab />}
           {activeTab === 'chat' && <ChatTab />}
+          {activeTab === 'members' && <TeamMembers />}
         </div>
       </main>
 

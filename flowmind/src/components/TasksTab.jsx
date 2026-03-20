@@ -50,7 +50,12 @@ export default function TasksTab() {
             </div>
             <div>
               <label className="label">Assign To *</label>
-              <input className="input" placeholder="Member name" value={form.assignedTo} onChange={e => set('assignedTo', e.target.value)} />
+              <select className="input" value={form.assignedTo} onChange={e => set('assignedTo', e.target.value)} style={{ cursor: 'pointer' }}>
+                <option value="">Select a team member</option>
+                {members.map((m, i) => (
+                  <option key={m.id || i} value={m.name}>{m.name} {m.isLeader ? '(Leader)' : '(Member)'}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="label">Deadline</label>

@@ -3,12 +3,14 @@ import Sidebar from '../components/Sidebar'
 import MemberTasks from '../components/MemberTasks'
 import ChatTab from '../components/ChatTab'
 import TeamFeed from '../components/TeamFeed'
+import TeamMembers from '../components/TeamMembers'
 import styles from './Dashboard.module.css'
 
 const TAB_TITLES = {
   mytasks: 'My Tasks',
   chat: 'AI Assistant',
   feed: 'Team Feed',
+  members: 'Team Members',
 }
 
 export default function MemberDashboard() {
@@ -26,6 +28,7 @@ export default function MemberDashboard() {
           {activeTab === 'mytasks' && <MemberTasks />}
           {activeTab === 'chat' && <ChatTab />}
           {activeTab === 'feed' && <TeamFeed />}
+          {activeTab === 'members' && <TeamMembers />}
         </div>
       </main>
     </div>

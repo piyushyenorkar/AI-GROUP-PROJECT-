@@ -20,8 +20,8 @@
   --text: #f0f0f8;
   --text2: #9999bb;
   --text3: #55556a;
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Poppins', sans-serif;
   --radius: 12px;
   --radius-lg: 18px;
   --shadow: 0 4px 24px rgba(0,0,0,0.4);
@@ -104,6 +104,18 @@ input, textarea, select { font-family: var(--font-body); }
 }
 .input:focus { border-color: var(--accent); }
 .input::placeholder { color: var(--text3); }
+
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239999bb' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+select.input option {
+  background: var(--surface);
+  color: var(--text);
+}
 
 .textarea {
   background: var(--surface);

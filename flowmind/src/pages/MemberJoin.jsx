@@ -5,19 +5,26 @@ import styles from './Setup.module.css'
 
 export default function MemberJoin() {
   const { joinTeam, navigate } = useApp()
-  const { saveTeam, user } = useAuth()
+  const { saveTeam, isTeamMember, user } = useAuth()
   const [form, setForm] = useState({ name: user?.name || '', code: '' })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
+  const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setError('') }
 
   const handleJoin = () => {
     if (!form.name || !form.code) return
+    const code = form.code.toUpperCase()
+
+    // Check if user is already in this team
+    if (isTeamMember(code)) {
+      setError('You are already a member of this team. You cannot join the same team twice.')
+      return
+    }
+
     setLoading(true)
     setTimeout(() => {
-      const code = form.code.toUpperCase()
       joinTeam(code, form.name)
-      // Save team to user's localStorage profile
       saveTeam(code, 'Team Project', 'member')
       setLoading(false)
     }, 800)
@@ -56,6 +63,18 @@ export default function MemberJoin() {
           </div>
 
           <p className={styles.hint}>Don't have a code? Ask your team leader.</p>
+
+          {error && (
+            <div style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              color: 'var(--red)',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              textAlign: 'center',
+            }}>{error}</div>
+          )}
 
           <button
             className={`btn-primary ${styles.submit}`}

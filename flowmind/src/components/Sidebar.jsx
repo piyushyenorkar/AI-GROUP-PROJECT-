@@ -9,12 +9,14 @@ const LEADER_ITEMS = [
   { id: 'decisions', icon: '⚖️', label: 'Decisions' },
   { id: 'insights', icon: '🔮', label: 'AI Insights' },
   { id: 'chat', icon: '💬', label: 'AI Chat' },
+  { id: 'members', icon: '👥', label: 'Team Members' },
 ]
 
 const MEMBER_ITEMS = [
   { id: 'mytasks', icon: '📋', label: 'My Tasks' },
   { id: 'chat', icon: '💬', label: 'AI Assistant' },
   { id: 'feed', icon: '📡', label: 'Team Feed' },
+  { id: 'members', icon: '👥', label: 'Team Members' },
 ]
 
 export default function Sidebar({ activeTab, setActiveTab }) {
