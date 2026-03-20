@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
+import TeamSwitcher from '../components/TeamSwitcher'
 import styles from './Landing.module.css'
 
 export default function Landing() {
   const { navigate } = useApp()
   const { user, isAuthenticated } = useAuth()
   const [hovered, setHovered] = useState(null)
+  const [showSwitcher, setShowSwitcher] = useState(false)
 
-  // If authenticated, show welcome with options
-  // If not, redirect to create/join still works but Sign In offers persistence
   return (
     <div className={styles.page}>
-      {/* Background grid */}
       <div className={styles.grid} />
       <div className={styles.glow1} />
       <div className={styles.glow2} />
 
       <nav className={styles.nav}>
-        <div className={styles.logo}>
+        <div className={styles.logo} onClick={() => isAuthenticated && setShowSwitcher(true)} style={isAuthenticated ? { cursor: 'pointer' } : {}}>
           <span className={styles.logoMark}>FM</span>
           <span className={styles.logoText}>FlowMind</span>
         </div>
@@ -105,6 +104,8 @@ export default function Landing() {
           </div>
         ))}
       </div>
+
+      {showSwitcher && <TeamSwitcher onClose={() => setShowSwitcher(false)} />}
     </div>
   )
 }

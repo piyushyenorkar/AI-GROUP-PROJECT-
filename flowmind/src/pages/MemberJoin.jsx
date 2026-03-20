@@ -83,6 +83,18 @@ export default function MemberJoin() {
           >
             {loading ? <><span className="spinner" /> Joining...</> : <>⚡ Join Team</>}
           </button>
+
+          <div style={{ textAlign: 'center', margin: '12px 0 0' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text3)' }}>or</span>
+          </div>
+
+          <button
+            className={`btn-secondary ${styles.submit}`}
+            onClick={() => navigate('find-teams')}
+            style={{ background: 'var(--surface)' }}
+          >
+            🔍 Find Universal Teams
+          </button>
         </div>
       </div>
     </div>

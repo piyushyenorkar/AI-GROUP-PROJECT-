@@ -4,9 +4,9 @@ import { useApp } from '../context/AppContext'
 import styles from './AuthPage.module.css'
 
 export default function AuthPage() {
-  const { signup, signin, getMyTeams, user } = useAuth()
-  const { navigate, createTeam, joinTeam } = useApp()
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const { signup, signin, signout, user } = useAuth()
+  const { navigate } = useApp()
+  const [mode, setMode] = useState('signin')
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -26,12 +26,8 @@ export default function AuthPage() {
       setLoading(true)
       const result = signup(form.name, form.email, form.password)
       setLoading(false)
-      if (result.error) {
-        setError(result.error)
-      } else {
-        // Signed up — go to landing to create/join team
-        navigate('landing')
-      }
+      if (result.error) { setError(result.error) }
+      // On success, component re-renders showing welcome screen
     } else {
       if (!form.email.trim() || !form.password) {
         setError('Please fill in all fields.')
@@ -40,16 +36,12 @@ export default function AuthPage() {
       setLoading(true)
       const result = signin(form.email, form.password)
       setLoading(false)
-      if (result.error) {
-        setError(result.error)
-      }
-      // If success, the component will re-render showing "My Teams"
+      if (result.error) { setError(result.error) }
     }
   }
 
-  // If user is signed in, show their teams
+  // ── Signed in: Simple welcome + actions + logout ─────────────────────
   if (user) {
-    const teams = getMyTeams()
     return (
       <div className={styles.page}>
         <div className={styles.glow} />
@@ -62,51 +54,24 @@ export default function AuthPage() {
           <div className={styles.title}>Welcome back, {user.name}!</div>
           <div className={styles.sub}>Pick up where you left off or start something new.</div>
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
             <button className="btn-primary" onClick={() => navigate('leader-setup')}>👑 Create Team</button>
             <button className="btn-secondary" onClick={() => navigate('member-join')}>⚡ Join Team</button>
           </div>
 
-          {teams.length > 0 && (
-            <div className={styles.teamsSection}>
-              <div className={styles.teamsTitle}>📁 My Teams</div>
-              <div className={styles.teamsList}>
-                {teams.map((t, i) => (
-                  <div
-                    key={i}
-                    className={styles.teamItem}
-                    onClick={() => {
-                      if (t.role === 'leader') {
-                        createTeam(t.projectName, '', '', user.name)
-                      } else {
-                        joinTeam(t.code, user.name)
-                      }
-                    }}
-                  >
-                    <div>
-                      <div className={styles.teamName}>{t.projectName}</div>
-                      <div className={styles.teamMeta}>
-                        <span className={styles.teamCode}>{t.code}</span>
-                        <span className={styles.teamRole}>{t.role}</span>
-                      </div>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2">
-                      <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {teams.length === 0 && (
-            <div className={styles.noTeams}>No teams yet — create or join one above!</div>
-          )}
+          <button
+            className="btn-ghost"
+            onClick={() => { signout(); navigate('landing') }}
+            style={{ width: '100%', justifyContent: 'center', color: 'var(--text3)', fontSize: '13px' }}
+          >
+            🚪 Log Out
+          </button>
         </div>
       </div>
     )
   }
 
+  // ── Not signed in: Sign in / Sign up form ─────────────────────────────
   return (
     <div className={styles.page}>
       <div className={styles.glow} />

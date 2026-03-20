@@ -1,0 +1,358 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 0;
+}
+
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.logoMark {
+  background: var(--accent);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+
+.logoText {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 32px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tabActive {
+  background: var(--bg2);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 100px;
+  background: var(--accent-glow);
+  color: var(--accent2);
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 6px;
+  padding: 0 5px;
+}
+
+/* Team Cards Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.teamCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.teamCard:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.teamHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.teamName {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.teamLeader {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.teamLocation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg2);
+  padding: 3px 8px;
+  border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.teamPurpose {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.teamMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.teamActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Application cards */
+.appCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.appHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.appTeam {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.appApplicant {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.appDate {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.appActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.acceptBtn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.acceptBtn:hover {
+  opacity: 0.85;
+}
+
+.rejectBtn {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(255,107,107,0.2);
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rejectBtn:hover {
+  background: rgba(255,107,107,0.2);
+}
+
+.chatBtn {
+  background: var(--accent-glow);
+  color: var(--accent2);
+  border: 1px solid rgba(124,106,255,0.2);
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chatBtn:hover {
+  background: rgba(124,106,255,0.2);
+}
+
+/* Chat Section */
+.chatSection {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.chatMessages {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chatMsg {
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 10px;
+  max-width: 80%;
+}
+
+.chatMsgMine {
+  background: var(--accent);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.chatMsgOther {
+  background: var(--surface2);
+  color: var(--text);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.chatSender {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  opacity: 0.7;
+}
+
+.chatInput {
+  display: flex;
+  gap: 8px;
+}
+
+.chatInput input {
+  flex: 1;
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text3);
+}
+
+.emptyIcon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+
+.emptySub {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/* Search */
+.searchRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.searchRow input {
+  flex: 1;
+}

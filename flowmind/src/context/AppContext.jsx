@@ -5,9 +5,43 @@ const AppContext = createContext(null)
 
 const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase()
 
+const MEMBERS_KEY = 'flowmind_team_members'
+const TEAM_DATA_KEY = 'flowmind_team_data'
+
+// ── Persistent member storage (per team code) ────────────────────────────
+function getPersistedMembers(teamCode) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MEMBERS_KEY) || '{}')
+    return all[teamCode] || []
+  } catch { return [] }
+}
+
+function persistMembers(teamCode, members) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MEMBERS_KEY) || '{}')
+    all[teamCode] = members
+    localStorage.setItem(MEMBERS_KEY, JSON.stringify(all))
+  } catch {}
+}
+
+function getPersistedTeamData(teamCode) {
+  try {
+    const all = JSON.parse(localStorage.getItem(TEAM_DATA_KEY) || '{}')
+    return all[teamCode] || null
+  } catch { return null }
+}
+
+function persistTeamData(teamCode, data) {
+  try {
+    const all = JSON.parse(localStorage.getItem(TEAM_DATA_KEY) || '{}')
+    all[teamCode] = data
+    localStorage.setItem(TEAM_DATA_KEY, JSON.stringify(all))
+  } catch {}
+}
+
 const INITIAL_STATE = {
-  role: null, // 'leader' | 'member'
-  page: 'landing', // landing | auth | leader-setup | leader-dashboard | member-join | member-dashboard
+  role: null,
+  page: 'landing',
   team: null,
   currentUser: null,
   tasks: [],
@@ -47,6 +81,11 @@ export function AppProvider({ children }) {
       createdAt: new Date().toISOString(),
     }
     const leader = { id: 'leader', name: leaderName, role: 'Leader', isLeader: true }
+
+    // Persist team data and leader as member
+    persistTeamData(team.code, team)
+    persistMembers(team.code, [leader])
+
     setState(prev => ({
       ...prev,
       role: 'leader',
@@ -65,7 +104,6 @@ export function AppProvider({ children }) {
       }],
     }))
 
-    // ── Hindsight: Store project creation ──
     retainMemory(team.code, `Project "${projectName}" was created by ${leaderName}. Description: ${description || 'N/A'}. Deadline: ${deadline || 'Not set'}.`, {
       type: 'project_created',
       projectName,
@@ -78,40 +116,85 @@ export function AppProvider({ children }) {
   // ── MEMBER: Join team ────────────────────────────────────────────────
   const joinTeam = useCallback((code, name) => {
     const member = { id: `m_${Date.now()}`, name, role: 'Member', isLeader: false }
-    setState(prev => {
-      const teamData = prev.team || {
-        id: 1,
-        code,
-        projectName: 'Team Project',
-        description: 'A collaborative project',
-        deadline: '',
-        createdAt: new Date().toISOString(),
-      }
-      return {
-        ...prev,
-        role: 'member',
-        page: 'member-dashboard',
-        team: teamData,
-        currentUser: member,
-        members: [...(prev.members || []), member],
-        memoryFeed: [
-          {
-            id: Date.now(),
-            type: 'member_joined',
-            timestamp: new Date().toISOString(),
-            text: `${name} joined the team`,
-            icon: '👋',
-          },
-          ...(prev.memoryFeed || []),
-        ],
-      }
-    })
 
-    // ── Hindsight: Store member join ──
+    // Load persisted team data and members
+    const persistedTeam = getPersistedTeamData(code)
+    const persistedMembers = getPersistedMembers(code)
+
+    // Check if this person is already in the persisted members
+    const alreadyIn = persistedMembers.some(m => m.name === name)
+
+    const teamData = persistedTeam || {
+      id: 1,
+      code,
+      projectName: 'Team Project',
+      description: 'A collaborative project',
+      deadline: '',
+      createdAt: new Date().toISOString(),
+    }
+
+    // Build members list: persisted members + new member (if not already in)
+    const allMembers = alreadyIn
+      ? persistedMembers
+      : [...persistedMembers, member]
+
+    // Persist updated members
+    if (!alreadyIn) {
+      persistMembers(code, allMembers)
+    }
+
+    setState(prev => ({
+      ...prev,
+      role: 'member',
+      page: 'member-dashboard',
+      team: teamData,
+      currentUser: member,
+      members: allMembers,
+      memoryFeed: [
+        {
+          id: Date.now(),
+          type: 'member_joined',
+          timestamp: new Date().toISOString(),
+          text: `${name} joined the team`,
+          icon: '👋',
+        },
+        ...(prev.memoryFeed || []),
+      ],
+    }))
+
     retainMemory(code, `${name} joined the team.`, {
       type: 'member_joined',
       memberName: name,
     })
+  }, [])
+
+  // ── LEADER: Load existing team (team switcher) ─────────────────────
+  const loadTeamAsLeader = useCallback((code, projectName, leaderName) => {
+    const persistedTeam = getPersistedTeamData(code)
+    const persistedMembers = getPersistedMembers(code)
+
+    const teamData = persistedTeam || {
+      id: 1,
+      code,
+      projectName,
+      description: '',
+      deadline: '',
+      createdAt: new Date().toISOString(),
+    }
+
+    const leader = persistedMembers.find(m => m.isLeader) || { id: 'leader', name: leaderName, role: 'Leader', isLeader: true }
+
+    setState(prev => ({
+      ...prev,
+      role: 'leader',
+      page: 'leader-dashboard',
+      team: teamData,
+      currentUser: leader,
+      members: persistedMembers.length > 0 ? persistedMembers : [leader],
+      tasks: [],
+      decisions: [],
+      memoryFeed: [],
+    }))
   }, [])
 
   // ── TASKS ────────────────────────────────────────────────────────────
@@ -126,7 +209,6 @@ export function AppProvider({ children }) {
       ...taskData,
     }
     setState(prev => {
-      // ── Hindsight: Store task creation ──
       if (prev.team?.code) {
         retainMemory(prev.team.code, `Task "${task.title}" was assigned to ${task.assignedTo}. Description: ${task.description || 'N/A'}. Deadline: ${task.deadline || 'Not set'}. Estimated hours: ${task.estimatedHours}.`, {
           type: 'task_assigned',
@@ -158,7 +240,6 @@ export function AppProvider({ children }) {
       const task = tasks.find(t => t.id === taskId)
       const emoji = status === 'done' ? '✅' : status === 'in-progress' ? '⚡' : '📋'
 
-      // ── Hindsight: Store status change ──
       if (prev.team?.code && task) {
         retainMemory(prev.team.code, `Task "${task.title}" was moved to ${status} by ${prev.currentUser?.name || 'a team member'}.`, {
           type: 'task_status_change',
@@ -190,7 +271,6 @@ export function AppProvider({ children }) {
       )
       const task = tasks.find(t => t.id === taskId)
 
-      // ── Hindsight: Store progress update ──
       if (prev.team?.code) {
         retainMemory(prev.team.code, `${authorName} logged a progress update on "${task?.title}": "${updateText}"`, {
           type: 'task_update',
@@ -222,7 +302,6 @@ export function AppProvider({ children }) {
       ...decisionData,
     }
     setState(prev => {
-      // ── Hindsight: Store decision ──
       if (prev.team?.code) {
         retainMemory(prev.team.code, `Decision made: "${decision.decision}". Reason: ${decision.reason || 'N/A'}. Impact level: ${decision.impact || 'N/A'}. People involved: ${decision.people || 'N/A'}.`, {
           type: 'decision_made',
@@ -259,6 +338,7 @@ export function AppProvider({ children }) {
       addMemory,
       createTeam,
       joinTeam,
+      loadTeamAsLeader,
       addTask,
       updateTaskStatus,
       addTaskUpdate,
