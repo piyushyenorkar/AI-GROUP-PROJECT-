@@ -1,0 +1,100 @@
+.wrap { display: flex; flex-direction: column; gap: 20px; }
+
+.topBar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.pageTitle { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text); }
+.pageSub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+.formCard { }
+.formFields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.formActions { display: flex; justify-content: flex-end; }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--bg2);
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius-lg);
+  gap: 12px;
+}
+.emptyIcon { font-size: 40px; }
+.emptyTitle { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); }
+.emptySub { font-size: 13px; color: var(--text2); max-width: 300px; }
+
+.timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+
+.decisionCard {
+  display: flex;
+  gap: 0;
+  position: relative;
+  padding-left: 32px;
+  padding-bottom: 20px;
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.timelineLine {
+  position: absolute;
+  left: 10px;
+  top: 20px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.decisionCard:last-child .timelineLine { display: none; }
+
+.timelineDot {
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.decisionContent {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  flex: 1;
+  transition: border-color 0.2s;
+}
+.decisionContent:hover { border-color: var(--border2); }
+
+.decisionHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.decisionDate { font-size: 11px; color: var(--text3); }
+
+.decisionText { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 8px; }
+
+.decisionReason { font-size: 13px; color: var(--text2); line-height: 1.4; margin-bottom: 6px; }
+.reasonLabel { font-weight: 600; color: var(--text2); }
+
+.decisionPeople { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+
+.memoryTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--green);
+  background: var(--green-dim);
+  padding: 3px 8px;
+  border-radius: 100px;
+  border: 1px solid rgba(34,211,160,0.2);
+}
+.memoryDot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }

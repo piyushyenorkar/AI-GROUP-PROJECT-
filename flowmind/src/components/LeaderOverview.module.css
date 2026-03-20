@@ -1,0 +1,57 @@
+.wrap { display: flex; flex-direction: column; gap: 20px; }
+
+.topRow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+.healthCard { display: flex; flex-direction: column; }
+.healthLabel { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; margin-bottom: 8px; }
+.healthScore { font-family: var(--font-display); font-size: 52px; font-weight: 800; line-height: 1; }
+.healthSub { font-size: 13px; color: var(--text3); margin-bottom: 12px; }
+.healthBar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.healthFill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.healthHint { font-size: 12px; color: var(--text2); }
+
+.codeCard { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.codeLabel { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; margin-bottom: 10px; }
+.codeDisplay { font-family: var(--font-display); font-size: 36px; font-weight: 800; letter-spacing: 0.2em; color: var(--accent2); background: var(--accent-glow); padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(124,106,255,0.2); }
+.codeSub { font-size: 12px; color: var(--text3); margin-top: 8px; }
+.codeMembers { font-size: 13px; color: var(--green); margin-top: 6px; }
+
+.deadlineCard { display: flex; flex-direction: column; justify-content: center; }
+.deadlineLabel { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; margin-bottom: 8px; }
+.deadlineDate { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); }
+.deadlineDays { font-size: 14px; color: var(--yellow); margin-top: 6px; }
+
+.statsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.statCard { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+.statVal { font-family: var(--font-display); font-size: 32px; font-weight: 800; }
+.statLabel { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+.section { }
+
+.quickActions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.quickBtn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.quickBtn span:first-child { font-size: 24px; }
+.quickBtn:hover { background: var(--surface2); border-color: var(--accent); color: var(--text); transform: translateY(-2px); }
+
+.taskList { display: flex; flex-direction: column; gap: 8px; }
+.taskRow { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px 16px; }
+.taskStatus { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.taskStatus[data-status='done'] { background: var(--green); }
+.taskStatus[data-status='in-progress'] { background: var(--yellow); }
+.taskStatus[data-status='todo'] { background: var(--text3); }
+.taskTitle { flex: 1; font-size: 14px; color: var(--text); }
+.taskMeta { font-size: 12px; color: var(--text2); }

@@ -1,0 +1,38 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.topBar {
+  padding: 20px 28px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-bottom: 16px;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.content {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+  height: calc(100vh - 65px);
+}
